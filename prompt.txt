@@ -1,0 +1,8 @@
+Generate a cohesive and concise summary that captures the essence of the video by analyzing the provided list of individual frame captions. 
+Ensure the final caption reflects the overall narrative, conveys the context and meaning, and integrates the temporal flow between scenes 
+seamlessly. Address any variations in tone or details to produce a unified and fluid description. Enhance clarity and avoid repetitive 
+language, ensuring the summary is both engaging and descriptive without unnecessary redundancy. Highlight key events, actions, or emotions 
+to create a vivid and compelling representation of the video's content, while maintaining a polished and natural flow. Limit the summary 
+to 128 words for precision and brevity.
+
+Don't add any riferiment to the fact that youo're watching a video (e.g. avoid stuff like "in this video we can see....", "in these frames ...")

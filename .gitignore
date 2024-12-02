@@ -129,6 +129,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+video_caption_venv/
 
 # Spyder project settings
 .spyderproject
