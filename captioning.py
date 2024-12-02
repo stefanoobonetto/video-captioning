@@ -62,14 +62,13 @@ def video_captioning(video_path, frame_rate=1):
 if __name__ == "__main__":
     
     model_query = ModelQuery()
-    
     path_videos = os.path.join(os.getcwd(), "real_videos")
     
     video_files = [f for f in os.listdir(path_videos) if f.endswith(('.mp4'))]
     captions_data = []
 
     for video_file in video_files:
-        input_video = os.path.join(path_videos, video_file)
+        input_video = os.path.join(path_videos, "Airplane_Real.mp4")
         captions = video_captioning(input_video)        # list
         
         # Step 1: NLU - Parse initial user input
@@ -84,8 +83,9 @@ if __name__ == "__main__":
         print(f"\n\n\n-----------------------------------Response from llama ({video_file})-----------------------------------\n")
         print(caption)
         print("\n-----------------------------------------------------------------------------------------\n\n\n")
-    csv_file = os.path.join(os.getcwd(), "video_captions.csv")
-    with open(csv_file, mode='w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=["filename", "caption"])
-        writer.writeheader()
-        writer.writerows(captions_data)
+    
+    # csv_file = os.path.join(os.getcwd(), "video_captions.csv")
+    # with open(csv_file, mode='w', newline='') as file:
+    #     writer = csv.DictWriter(file, fieldnames=["filename", "caption"])
+    #     writer.writeheader()
+    #     writer.writerows(captions_data)

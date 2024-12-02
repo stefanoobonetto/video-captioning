@@ -1,6 +1,6 @@
 import os
 import ollama
-import logging
+# import logging
 
 # Configure logging
 # logging.basicConfig(level=logging.DEBUG)
