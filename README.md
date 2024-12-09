@@ -2,6 +2,10 @@
 
 This repository contains a Python script designed to generate textual captions for videos using an AI model.
 
+I used it to generate captions starting from real videos to generate corrispondent synthetic videos:
+
+
+
 ## How It Works
 
 The `captioning.py` script processes videos located in the `real_videos` folder and generates a textual description (caption) for each video.  
