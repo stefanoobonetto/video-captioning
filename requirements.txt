@@ -1,0 +1,6 @@
+ollama
+torch
+transformers
+tqdm
+torch
+opencv-python
