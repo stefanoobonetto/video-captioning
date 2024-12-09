@@ -11,16 +11,13 @@ class ModelQuery:
         self.history = []
 
     def add_to_history(self, message):
-        """Add a message to the history."""
         self.history.append(message)
 
     def action_history_str(self):
-        """Return the history as a string."""
         return "\n".join(self.history)
 
     @staticmethod
     def load_content(content):
-        """Load content from a file or return the string itself."""
         if os.path.isfile(content):  
             with open(content, 'r') as f:
                 return f.read()
@@ -34,7 +31,7 @@ class ModelQuery:
 
         user_env = os.getenv('USER')
         
-        if user_env == 'stefano.bonetto':
+        if user_env == 'stefano.bonetto' or user_env == 'pietro.bologna' or user_env == 'christian.moiola':
             self.add_to_history(user_input)
             
             messages = [
