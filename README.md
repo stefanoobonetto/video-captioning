@@ -4,7 +4,7 @@ This repository contains a Python script designed to generate textual captions f
 
 I used it to generate captions starting from real videos to generate corrispondent synthetic videos:
 
-
+![Example Output](real_videos/pipeline.png)  
 
 ## How It Works
 
