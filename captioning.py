@@ -4,9 +4,9 @@ import torch
 from transformers import BlipForConditionalGeneration, BlipProcessor
 from tqdm import tqdm
 import csv
-from model_query import ModelQuery
+from src.model_query import ModelQuery
 
-PROMPT_PATH = os.path.join(os.getcwd(), "prompt.txt")
+PROMPT_PATH = os.path.join(os.getcwd(), "src/prompt.txt")
 
 def extract_frames(video_path, frame_rate=1):
     """

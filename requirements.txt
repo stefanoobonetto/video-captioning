@@ -4,3 +4,4 @@ transformers
 tqdm
 torch
 opencv-python
+pillow
