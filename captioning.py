@@ -37,17 +37,10 @@ def generate_caption(model, processor, frame):
     return processor.decode(caption[0], skip_special_tokens=True)
 
 
-def video_captioning(video_path, frame_rate=1):
+def video_captioning(video_path, frame_rate, model, processor):
     """
     Generate captions for a video by processing frames at a specified frame rate.
     """
-    print("Loading model...")
-    processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
-    model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base").to(
-        "cuda" if torch.cuda.is_available() else "cpu"
-    )
-
-    print("Extracting frames...")
     frames = extract_frames(video_path, frame_rate)
     
     captions = []
@@ -61,15 +54,22 @@ def video_captioning(video_path, frame_rate=1):
 
 if __name__ == "__main__":
     
+    print("Loading models...")
+    blip_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+    blip_model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base").to(
+        "cuda" if torch.cuda.is_available() else "cpu"
+    )
+
     model_query = ModelQuery()
     path_videos = os.path.join(os.getcwd(), "real_videos")
     
     video_files = [f for f in os.listdir(path_videos) if f.endswith(('.mp4'))]
     captions_data = []
 
-    for video_file in video_files:
+    for video_file in sorted(video_files):
+        print(f"Processing video: {video_file}")
         input_video = os.path.join(path_videos, video_file)
-        captions = video_captioning(input_video)        # list
+        captions = video_captioning(input_video, frame_rate=1, model=blip_model, processor=blip_processor)  # list
         
         # Step 1: NLU - Parse initial user input
         caption = model_query.query_model(
@@ -78,10 +78,9 @@ if __name__ == "__main__":
         )    
         captions_data.append({"filename": video_file, "caption": caption})
 
-        # print(f"\n\nInput list of captions: {captions}\n\n")
-        print(f"\n\n\n-----------------------------------Response from llama ({video_file})-----------------------------------\n")
+        print(f"\n-----------------------------------Response from llama ({video_file})-----------------------------------\n")
         print(caption)
-        print("\n-----------------------------------------------------------------------------------------\n\n\n")
+        print("\n-----------------------------------------------------------------------------------------\n")
     
     # Ensure the output directory exists
     os.makedirs(os.path.join(os.getcwd(), "output"), exist_ok=True)
