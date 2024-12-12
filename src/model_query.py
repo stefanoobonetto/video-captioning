@@ -29,9 +29,10 @@ class ModelQuery:
         
         user_input = self.load_content(input_file)
 
-        user_env = os.getenv('USER')
+        #user_env = os.getenv('USER')
         
-        if user_env == 'stefano.bonetto' or user_env == 'pietro.bologna' or user_env == 'christian.moiola':
+        # if user_env == 'stefano.bonetto' or user_env == 'pietro.bologna' or user_env == 'christian.moiola':
+        try:
             self.add_to_history(user_input)
             
             messages = [
@@ -47,5 +48,7 @@ class ModelQuery:
                 messages=messages
             )
             return response['message']['content']
-        else:
-            raise ValueError('Unknown user environment. Please set the USER environment variable.')
+        # else:
+        #     raise ValueError('Unknown user environment. Please set the USER environment variable.')
+        except Exception as e:
+            return str(e)

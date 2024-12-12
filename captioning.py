@@ -83,7 +83,10 @@ if __name__ == "__main__":
         print(caption)
         print("\n-----------------------------------------------------------------------------------------\n\n\n")
     
-    csv_file = os.path.join(os.getcwd(), "video_captions.csv")
+    # Ensure the output directory exists
+    os.makedirs(os.path.join(os.getcwd(), "output"), exist_ok=True)
+    csv_file = os.path.join(os.getcwd(), "output/video_captions.csv")
+
     with open(csv_file, mode='w', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=["filename", "caption"])
         writer.writeheader()
