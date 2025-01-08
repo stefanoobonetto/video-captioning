@@ -39,7 +39,7 @@ a. **Model Used**:
 The script uses BLIP2 pre-trained model to generate captions for single frames and then pass it to llama3.2 to compose the description for the video. 
 The `model_query.py` file contains the functions required to interact with the model.
 
-b. z**Custom Prompt**:
+b. **Custom Prompt**:
 The `prompt.txt` file contains the textual prompt used to guide the caption generation. You can modify this file to customize the captions generated.
 
 c. **Video Format**:
