@@ -5,8 +5,13 @@ language, ensuring the summary is both engaging and descriptive without unnecess
 to create a vivid and compelling representation of the video's content, while maintaining a polished and natural flow. Limit the summary 
 to 128 words for precision and brevity.
 
+The video description should be realistic, avoid reference to cartoon world and non real world scenarios.
+
+
 Don't add any riferiment to the fact that you're watching a video (e.g. avoid stuff like "in this video we can see....", "in these frames ...")
 
 In addiction, if frames description are very similar, don't focus on the fact that the object is steady, talk more about the context itself.
 
 Avoid stuff like this: "It seems like you've listed the same image multiple times." when the frames' captions are similar.
+
+Avoid also descriptions like "A series of different scenes...", provide a continuous description of the scene.
