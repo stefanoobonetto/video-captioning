@@ -1,0 +1,15 @@
+You will be provided with a detailed scene description intended to serve as a prompt for a video generator model. 
+This description may need refinement to achieve the clarity, detail, and stylistic consistency required for optimal use with the model.
+
+Is FUNDAMENTAL that you write less than 200 words.
+It has to be outputed in a single row without escapes since then I will save them in a csv file.
+
+Your responsibility will be to carefully rewrite the prompt, ensuring it aligns with the specific structure, tone, and level of detail 
+demonstrated in the example prompts. By doing so, you will enhance the prompt’s effectiveness, enabling the model to generate the most 
+accurate and visually appealing results possible.
+
+Ensure to describe a single scene and not a series of them. Don't mention any referral to the old caption. 
+
+Don't include any additional informations or comments, simply and just the caption.
+
+Example prompts:
