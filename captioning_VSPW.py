@@ -1,67 +1,119 @@
 import os
 import cv2
 import torch
+import numpy as np
 from transformers import BlipForConditionalGeneration, BlipProcessor
 from tqdm import tqdm
 import csv
 from src.model_query import ModelQuery
 
 PROMPT_PATH = os.path.join(os.getcwd(), "src/prompt.txt")
-MAX_FRAME = 20
 
-def load_frames_from_directory(directory_path):
+
+def load_k_spaced_frames_from_directory(directory_path, k, exts=('.jpg', '.jpeg', '.png')):
     """
-    Load frames (images) from a directory, selecting only the first 20 frames.
+    Select exactly k frames uniformly distributed across N available frames (one approximately every N/k).
     """
+    files = [f for f in sorted(os.listdir(directory_path)) if f.lower().endswith(exts)]
+    N = len(files)
+    if N == 0 or k <= 0:
+        return []
+
+    k = min(k, N)
+    indices = np.linspace(0, N - 1, num=k)
+    indices = np.round(indices).astype(int)
+
     frames = []
-    for file_name in sorted(os.listdir(directory_path))[:MAX_FRAME]:
-        if file_name.endswith(('.jpg', '.jpeg', '.png')):
-            frame_path = os.path.join(directory_path, file_name)
-            frame = cv2.imread(frame_path)
-            if frame is not None:
-                frames.append(frame)
+    for i in indices:
+        path = os.path.join(directory_path, files[i])
+        img_bgr = cv2.imread(path)
+        if img_bgr is not None:
+            img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+            frames.append(img_rgb)
     return frames
 
-def generate_caption(model, processor, frame):
+
+def load_frames_from_directory(directory_path, max_frame, exts=('.jpg', '.jpeg', '.png')):
+    """
+    Load the first max_frame frames in alphabetical order.
+    """
+    frames = []
+    for file_name in sorted(os.listdir(directory_path))[:max_frame]:
+        if file_name.lower().endswith(exts):
+            frame_path = os.path.join(directory_path, file_name)
+            img_bgr = cv2.imread(frame_path)
+            if img_bgr is not None:
+                img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+                frames.append(img_rgb)
+    return frames
+
+
+def generate_caption(model, processor, frame, device):
     """
     Generate a caption for a single frame using BLIP.
     """
-    inputs = processor(images=frame, return_tensors="pt").to("cuda" if torch.cuda.is_available() else "cpu")
-    caption = model.generate(**inputs)
-    return processor.decode(caption[0], skip_special_tokens=True)
+    with torch.no_grad():
+        inputs = processor(images=frame, return_tensors="pt").to(device)
+        caption_ids = model.generate(**inputs)
+    return processor.decode(caption_ids[0], skip_special_tokens=True)
 
-def folder_captioning(folder_path, model, processor):
+
+def folder_captioning(folder_path, model, processor, modality='consecutive', k=20, max_frame=20, device='cpu'):
     """
-    Generate captions for a folder of frames.
+    Generate captions for frames in a folder.
+
+    Parameters
+    ----------
+    modality : str
+        'consecutive' -> use the first max_frame frames
+        'spaced'      -> use k evenly spaced frames across the folder
     """
-    frames = load_frames_from_directory(folder_path)
+    if modality == 'consecutive':
+        frames = load_frames_from_directory(folder_path, max_frame=max_frame)
+    elif modality == 'spaced':
+        frames = load_k_spaced_frames_from_directory(folder_path, k=k)
+    else:
+        raise ValueError("modality must be 'consecutive' or 'spaced'")
+
+    if not frames:
+        return []
+
     captions = []
-    print("Generating captions for frames...")
+    print(f"Generating captions for frames... (mode: {modality})")
     for frame in tqdm(frames):
-        caption = generate_caption(model, processor, frame)
-        captions.append(caption)
+        cap_txt = generate_caption(model, processor, frame, device)
+        captions.append(cap_txt)
     return captions
+
 
 def load_existing_captions(csv_file):
     """
-    Load existing captions from the CSV file.
-    Returns a set of filenames already processed.
+    Return a set of filenames that already exist in the CSV (column 'filename').
     """
     existing_files = set()
-    if os.path.exists(csv_file):
-        with open(csv_file, mode='r') as file:
+    if os.path.exists(csv_file) and os.path.getsize(csv_file) > 0:
+        with open(csv_file, mode='r', newline='') as file:
             reader = csv.DictReader(file)
-            for row in reader:
-                existing_files.add(row['filename'])
+            if reader.fieldnames and 'filename' in reader.fieldnames:
+                for row in reader:
+                    existing_files.add(row['filename'])
     return existing_files
+
 
 if __name__ == "__main__":
     print("Loading models...")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     blip_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
-    blip_model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base").to(
-        "cuda" if torch.cuda.is_available() else "cpu"
-    )
-    
+    blip_model = BlipForConditionalGeneration.from_pretrained(
+        "Salesforce/blip-image-captioning-base"
+    ).to(device)
+    blip_model.eval()
+
+    model_query = ModelQuery()
+    path_folders = os.path.join(os.path.dirname(__file__), "Dataset_50")
+    os.makedirs(os.path.join(os.getcwd(), "output"), exist_ok=True)
+
+    # example dict
     redo_hunyuan = {
         "landscapes_50" : ["130_072wpvM7aS8", "365_tNcqs0Rr4e8", "386_4R9HpESkor8", "423_0ncnJ3hkVVE", "601_HaCqJzOlfkE", "499_CyiMlcRKE9w", "717_roaVZPLWqtM", "998_SSdHUdoaeJg", "1124_-fib1FfnpkQ", "1888_7FUWFMSlGfM", "2260_Gh2yGSTIiSI", "1899_84IR-sL2iI0", "1047_CjUyIs7-IXQ", "1273_ytl1MQC_9rE", "1899_84IR-sL2iI0"], 
         "animals_50" : ["305_6A59ikvOi00", "572_jW0aFgDYM4c", "1053_MLWQ-qvra68", "1151_4d-ItHAojEU", "1212_x8IQeCtHSvE", "1560__FEG2Q256yg", "2364_wJzN3rfubH8"],
@@ -78,17 +130,16 @@ if __name__ == "__main__":
         "landscapes_50": ["130_072wpvM7aS8", "1047_CjUyIs7-IXQ", "1273_ytl1MQC_9rE", "1720_Af-YGwVlcXE", "1824_6G4vunxpKQs"]
     }
 
-    model_query = ModelQuery()
-    path_folders = os.path.join(os.path.dirname(__file__), "Dataset_50")
-    os.makedirs(os.path.join(os.getcwd(), "output"), exist_ok=True)
 
     for folder in redo_cogvideo:
         video_folder = os.path.join(path_folders, folder)
         csv_file = os.path.join(os.getcwd(), f"output/video_captions_{folder}.csv")
-        with open(csv_file, mode='a', newline='') as file:
-                writer = csv.DictWriter(file, fieldnames=["filename", "caption"])
-                
-        # Load existing captions
+
+        if not os.path.exists(csv_file) or os.path.getsize(csv_file) == 0:
+            with open(csv_file, mode='w', newline='') as f:
+                writer = csv.DictWriter(f, fieldnames=["filename", "caption"])
+                writer.writeheader()
+
         existing_files = load_existing_captions(csv_file)
 
         for video in redo_cogvideo[folder]:
@@ -97,7 +148,14 @@ if __name__ == "__main__":
                 continue
 
             video_path = os.path.join(video_folder, video, "origin")
-            captions = folder_captioning(video_path, model=blip_model, processor=blip_processor)
+            captions = folder_captioning(
+                video_path,
+                model=blip_model,
+                processor=blip_processor,
+                modality='spaced',  # or 'consecutive'
+                k=20,
+                device=device
+            )
 
             caption = model_query.query_model(
                 system_prompt=PROMPT_PATH,
@@ -105,13 +163,12 @@ if __name__ == "__main__":
             )
             captions_data = {"filename": video, "caption": caption}
 
-            print(f"\n-----------------------------------Response from llama ({video})-----------------------------------\n")
+            print(f"\n--- Response from llama ({video}) ---\n")
             print(caption)
-            print("\n-----------------------------------------------------------------------------------------\n")
+            print("\n-------------------------------------\n")
 
-            # Append the current video's caption to the CSV file
-            with open(csv_file, mode='a', newline='') as file:
-                writer = csv.DictWriter(file, fieldnames=["filename", "caption"])
+            with open(csv_file, mode='a', newline='') as f:
+                writer = csv.DictWriter(f, fieldnames=["filename", "caption"])
                 writer.writerow(captions_data)
 
-
+    
