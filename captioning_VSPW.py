@@ -134,7 +134,7 @@ def sanitize_text(text: str) -> str:
     return s
 
 
-def refine_csv_with_modelquery(
+def refine_csv(
     input_csv: str,
     output_csv: str,
     base_prompt_path: str,
@@ -283,7 +283,7 @@ def main():
         if args.refinement:
             refined_csv = os.path.join(args.ltx_output_root, f"captions_{category}_refined.csv")
             ensure_parent_dir(refined_csv)
-            refine_csv_with_modelquery(
+            refine_csv(
                 input_csv=caption_csv,
                 output_csv=refined_csv,
                 base_prompt_path=args.base_prompt,
